@@ -1,5 +1,6 @@
 using Academy.Crm.Api.Services;
 using Academy.Crm.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public class AuthController(IUnitOfWork uow, IAuthService auth) : ControllerBase
     public record LoginResponse(string AccessToken, string RefreshToken);
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest req, CancellationToken ct)
     {
         var user = await uow.UserAccounts.Query()
