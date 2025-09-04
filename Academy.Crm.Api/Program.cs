@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Microsoft.OpenApi.Models;
+using Academy.Crm.Infra.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,5 +107,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Initialize DB and seed
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var auth = scope.ServiceProvider.GetRequiredService<Academy.Crm.Api.Services.IAuthService>();
+    await DataSeeder.SeedAsync(db, auth.HashPassword);
+}
 
 app.Run();
