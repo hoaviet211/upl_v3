@@ -58,6 +58,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// App services
+builder.Services.AddScoped<Academy.Crm.Api.Services.IAuthService, Academy.Crm.Api.Services.AuthService>();
+
 // Swagger + JWT security
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -105,4 +108,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
