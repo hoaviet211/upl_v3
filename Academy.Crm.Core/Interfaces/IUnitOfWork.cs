@@ -11,7 +11,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IRepository<IdCard> IdCards { get; }
     IRepository<Enrollment> Enrollments { get; }
     IRepository<Attendance> Attendances { get; }
+    IRepository<UserAccount> UserAccounts { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
-

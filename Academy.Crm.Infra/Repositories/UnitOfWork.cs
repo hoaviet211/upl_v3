@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
         IdCards = new Repository<IdCard>(_db);
         Enrollments = new Repository<Enrollment>(_db);
         Attendances = new Repository<Attendance>(_db);
+        UserAccounts = new Repository<UserAccount>(_db);
     }
 
     public IRepository<Programme> Programmes { get; }
@@ -27,10 +28,10 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<IdCard> IdCards { get; }
     public IRepository<Enrollment> Enrollments { get; }
     public IRepository<Attendance> Attendances { get; }
+    public IRepository<UserAccount> UserAccounts { get; }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);
 
     public ValueTask DisposeAsync() => _db.DisposeAsync();
 }
-
