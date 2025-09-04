@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: upl-academy-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Your_password123}
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $$MSSQL_SA_PASSWORD -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  api:
+    build:
+      context: .
+      dockerfile: Academy.Crm.Api/Dockerfile
+    container_name: upl-academy-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Default=Server=db,1433;Database=AcademyCrm;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Your_password123};TrustServerCertificate=True;
+      - Jwt__Issuer=UPL.Academy
+      - Jwt__Audience=UPL.Academy.Clients
+      - Jwt__Key=CHANGE_ME_SUPER_SECRET_DEVELOPMENT_KEY
+      - Storage__BasePath=storage
+      - FileUpload__MaxMB=10
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./storage:/app/storage
+
