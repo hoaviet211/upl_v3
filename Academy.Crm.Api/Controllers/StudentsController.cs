@@ -7,6 +7,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 namespace Academy.Crm.Api.Controllers;
 
@@ -27,6 +28,31 @@ public class StudentsController(IUnitOfWork uow, IMapper mapper, IConfiguration 
 
         var items = await paged.ProjectTo<StudentDto>(mapper.ConfigurationProvider).ToListAsync();
         return Ok(new PagedResult<StudentDto>(items, new PagingDto(page, Math.Min(pageSize, 100), total)));
+    }
+
+    [HttpPost("{id:int}/image")]
+    [RequestSizeLimit(long.MaxValue)]
+    public async Task<ActionResult<StudentDto>> UploadImage([FromRoute] int id, IFormFile file, CancellationToken ct)
+    {
+        var student = await uow.Students.Query().FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (student == null) return NotFound();
+        if (file == null || file.Length == 0) return BadRequest("Empty file");
+
+        var maxMb = cfg.GetValue<int>("FileUpload:MaxMB", 10);
+        if (file.Length > maxMb * 1024L * 1024L) return BadRequest($"File too large. Max {maxMb}MB");
+
+        var basePath = cfg["Storage:BasePath"] ?? "storage";
+        Directory.CreateDirectory(basePath);
+        var fileName = $"student_{id}_{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}";
+        var absPath = Path.Combine(basePath, fileName);
+        await using (var stream = System.IO.File.Create(absPath))
+        {
+            await file.CopyToAsync(stream, ct);
+        }
+        student.ImagePath = $"/{basePath.Trim('/')}/{fileName}";
+        uow.Students.Update(student);
+        await uow.SaveChangesAsync(ct);
+        return Ok(mapper.Map<StudentDto>(student));
     }
 
     [HttpPost]
@@ -88,4 +114,3 @@ public class StudentsController(IUnitOfWork uow, IMapper mapper, IConfiguration 
         return Ok(mapper.Map<StudentDto>(student));
     }
 }
-
