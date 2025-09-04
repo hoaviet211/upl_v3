@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<IdCard> IdCards => Set<IdCard>();
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,4 +40,3 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         }
     }
 }
-
